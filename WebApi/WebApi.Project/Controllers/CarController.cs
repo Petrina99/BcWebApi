@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -8,12 +9,7 @@ namespace WebApi.Project.Controllers
     [ApiController]
     public class CarController : ControllerBase
     {
-        static Car car1 = new Car(1, "BMW", "M5", 500, 2022, 120000);
-        static Car car2 = new Car(2, "Mercedes", "C class", 130, 2016, 200000);
-        static Car car3 = new Car(3, "Suzuki", "Swift", 90, 2023, 12000);
-        static Car car4 = new Car(4, "Audi", "A6", 270, 2019, 189400);
-
-        public static List<Car> cars = new List<Car> { car1, car2, car3, car4 };
+        public static List<Car> cars = new List<Car>();
 
         [HttpGet]
         public IActionResult GetCars()
@@ -28,7 +24,7 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpGet("id")]
-        public IActionResult GetCar([FromQuery] int id)
+        public IActionResult GetCar(int id)
         {
             Car foundCar = cars.Find(x => x.Id == id);
             if (cars == null)
@@ -42,7 +38,7 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpGet("make")]
-        public IActionResult GetAllWithMake([FromQuery] string make)
+        public IActionResult GetAllWithMake(string make)
         {
             List<Car> filteredCars = new List<Car>();
 
@@ -56,7 +52,7 @@ namespace WebApi.Project.Controllers
 
             if (filteredCars == null)
             {
-                return NotFound();
+                return NotFound($"No cars found with {make} make");
             } else
             {
                 return Ok(filteredCars);
@@ -64,22 +60,37 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateCar([FromBody] Car newCar)
+        public IActionResult CreateCar(Car newCar)
         {
+            List<int> ids = new List<int>();
+
+            foreach (Car car in cars) 
+            {
+                ids.Add(car.Id);
+            }
+
+            int newId = 0;
+
+            if (ids.Count > 0) {
+                newId = ids.Max() + 1;
+            }
+
             if (newCar == null)
             {
-                return BadRequest();
+                return NoContent();
             } else
             {
+                newCar.Id = newId;
                 cars.Add(newCar);
-                return Ok(cars);
+                return Ok(newCar);
             }
         }
 
         [HttpPut]
-        public IActionResult UpdateCar([FromQuery] int id, [FromBody] Car updatedCar)
+        public IActionResult UpdateCar(int id, [FromBody] Car updatedCar)
         {
             Car carToUpdate = cars.Find(x => x.Id == id);
+
             if (carToUpdate == null)
             {
                 return BadRequest();
@@ -92,14 +103,15 @@ namespace WebApi.Project.Controllers
                 carToUpdate.Horsepower = updatedCar.Horsepower;
                 carToUpdate.YearOfMake = updatedCar.YearOfMake;
                 carToUpdate.Mileage = updatedCar.Mileage;
-                return Ok(cars);
+                return Ok(carToUpdate);
             }
         }
 
         [HttpDelete]
-        public IActionResult DeleteCar([FromQuery] int id) 
+        public IActionResult DeleteCar(int id) 
         { 
             Car carToRemove = cars.Find(x  => x.Id == id);
+
             if (carToRemove == null) { return BadRequest(); }
             else
             {
