@@ -28,7 +28,7 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpGet("id")]
-        public IActionResult GetCar([FromQuery] int id)
+        public IActionResult GetCar(int id)
         {
             Car foundCar = cars.Find(x => x.Id == id);
             if (cars == null)
@@ -42,7 +42,7 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpGet("make")]
-        public IActionResult GetAllWithMake([FromQuery] string make)
+        public IActionResult GetAllWithMake(string make)
         {
             List<Car> filteredCars = new List<Car>();
 
@@ -64,7 +64,7 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateCar([FromBody] Car newCar)
+        public IActionResult CreateCar(Car newCar)
         {
             if (newCar == null)
             {
@@ -77,7 +77,7 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpPut]
-        public IActionResult UpdateCar([FromQuery] int id, [FromBody] Car updatedCar)
+        public IActionResult UpdateCar(int id, [FromBody] Car updatedCar)
         {
             Car carToUpdate = cars.Find(x => x.Id == id);
             if (carToUpdate == null)
@@ -97,7 +97,7 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpDelete]
-        public IActionResult DeleteCar([FromQuery] int id) 
+        public IActionResult DeleteCar(int id) 
         { 
             Car carToRemove = cars.Find(x  => x.Id == id);
             if (carToRemove == null) { return BadRequest(); }
