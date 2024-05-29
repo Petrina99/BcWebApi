@@ -15,7 +15,7 @@ namespace WebApi.Project.Controllers
 
         public static List<Car> cars = new List<Car> { car1, car2, car3, car4 };
 
-        [HttpGet(Name = "GetCars")]
+        [HttpGet]
         public IActionResult GetCars()
         {
             if (cars == null)
@@ -26,8 +26,44 @@ namespace WebApi.Project.Controllers
                 return Ok(cars);
             }
         }
-        
-        [HttpPost(Name="CreateCar")]
+
+        [HttpGet("id")]
+        public IActionResult GetCar(int id)
+        {
+            Car foundCar = cars.Find(x => x.Id == id);
+            if (cars == null)
+            {
+                return NotFound($"Car with id {id} not found");
+            }
+            else
+            {
+                return Ok(foundCar);
+            }
+        }
+
+        [HttpGet("make")]
+        public IActionResult GetAllWithMake(string make)
+        {
+            List<Car> filteredCars = new List<Car>();
+
+            foreach(Car car in cars)
+            {
+                if (car.CarMake == make)
+                {
+                    filteredCars.Add(car); 
+                }
+            }
+
+            if (filteredCars == null)
+            {
+                return NotFound();
+            } else
+            {
+                return Ok(filteredCars);
+            }
+        }
+
+        [HttpPost]
         public IActionResult CreateCar([FromBody] Car newCar)
         {
             if (newCar == null)
@@ -40,7 +76,7 @@ namespace WebApi.Project.Controllers
             }
         }
 
-        [HttpPut(Name = "UpdateCar")]
+        [HttpPut]
         public IActionResult UpdateCar([FromQuery] int id, [FromBody] Car updatedCar)
         {
             Car carToUpdate = cars.Find(x => x.Id == id);
@@ -60,7 +96,7 @@ namespace WebApi.Project.Controllers
             }
         }
 
-        [HttpDelete(Name = "DeleteCar")]
+        [HttpDelete]
         public IActionResult DeleteCar([FromQuery] int id) 
         { 
             Car carToRemove = cars.Find(x  => x.Id == id);
