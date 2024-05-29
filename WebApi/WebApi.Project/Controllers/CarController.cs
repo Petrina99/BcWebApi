@@ -8,12 +8,7 @@ namespace WebApi.Project.Controllers
     [ApiController]
     public class CarController : ControllerBase
     {
-        static Car car1 = new Car(1, "BMW", "M5", 500, 2022, 120000);
-        static Car car2 = new Car(2, "Mercedes", "C class", 130, 2016, 200000);
-        static Car car3 = new Car(3, "Suzuki", "Swift", 90, 2023, 12000);
-        static Car car4 = new Car(4, "Audi", "A6", 270, 2019, 189400);
-
-        public static List<Car> cars = new List<Car> { car1, car2, car3, car4 };
+        public static List<Car> cars = new List<Car>();
 
         [HttpGet]
         public IActionResult GetCars()
@@ -66,11 +61,25 @@ namespace WebApi.Project.Controllers
         [HttpPost]
         public IActionResult CreateCar(Car newCar)
         {
+            List<int> ids = new List<int>();
+
+            foreach (Car car in cars) 
+            {
+                ids.Add(car.Id);
+            }
+
+            int newId = 0;
+
+            if (ids.Count > 0) {
+                newId = ids.Max() + 1;
+            }
+
             if (newCar == null)
             {
                 return BadRequest();
             } else
             {
+                newCar.Id = newId;
                 cars.Add(newCar);
                 return Ok(cars);
             }
