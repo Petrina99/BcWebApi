@@ -28,7 +28,7 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpGet("id")]
-        public IActionResult GetCar(int id)
+        public IActionResult GetCar([FromQuery] int id)
         {
             Car foundCar = cars.Find(x => x.Id == id);
             if (cars == null)
@@ -42,7 +42,7 @@ namespace WebApi.Project.Controllers
         }
 
         [HttpGet("make")]
-        public IActionResult GetAllWithMake(string make)
+        public IActionResult GetAllWithMake([FromQuery] string make)
         {
             List<Car> filteredCars = new List<Car>();
 
