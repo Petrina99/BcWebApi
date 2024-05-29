@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -51,7 +52,7 @@ namespace WebApi.Project.Controllers
 
             if (filteredCars == null)
             {
-                return NotFound();
+                return NotFound($"No cars found with {make} make");
             } else
             {
                 return Ok(filteredCars);
@@ -76,12 +77,12 @@ namespace WebApi.Project.Controllers
 
             if (newCar == null)
             {
-                return BadRequest();
+                return NoContent();
             } else
             {
                 newCar.Id = newId;
                 cars.Add(newCar);
-                return Ok(cars);
+                return Ok(newCar);
             }
         }
 
@@ -89,6 +90,7 @@ namespace WebApi.Project.Controllers
         public IActionResult UpdateCar(int id, [FromBody] Car updatedCar)
         {
             Car carToUpdate = cars.Find(x => x.Id == id);
+
             if (carToUpdate == null)
             {
                 return BadRequest();
@@ -101,7 +103,7 @@ namespace WebApi.Project.Controllers
                 carToUpdate.Horsepower = updatedCar.Horsepower;
                 carToUpdate.YearOfMake = updatedCar.YearOfMake;
                 carToUpdate.Mileage = updatedCar.Mileage;
-                return Ok(cars);
+                return Ok(carToUpdate);
             }
         }
 
@@ -109,6 +111,7 @@ namespace WebApi.Project.Controllers
         public IActionResult DeleteCar(int id) 
         { 
             Car carToRemove = cars.Find(x  => x.Id == id);
+
             if (carToRemove == null) { return BadRequest(); }
             else
             {
