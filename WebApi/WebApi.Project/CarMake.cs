@@ -10,7 +10,6 @@ namespace WebApi.Project
         public string? MakeCountry { get; set; }
 
         public bool IsActive { get; set; }
-        public List<Car>? Cars { get; } = new List<Car>();
         public CarMake() { }
         public CarMake(int id, string? makeName, string? makeCountry)
         {
