@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Npgsql;
 using System.Net;
 
 namespace WebApi.Project.Controllers
@@ -9,20 +10,145 @@ namespace WebApi.Project.Controllers
     [ApiController]
     public class CarController : ControllerBase
     {
-        public static List<Car> cars = new List<Car>();
+        private IConfiguration Configuration;
+        
+        public CarController(IConfiguration _configuration) 
+        { 
+            this.Configuration = _configuration;
+        }
 
         [HttpGet]
         public IActionResult GetCars()
         {
-            if (cars == null)
+            string connString = this.Configuration.GetConnectionString("db");
+            var conn = new NpgsqlConnection(connString);
+
+            conn.Open();
+
+            using var cmd1 = new NpgsqlCommand(connString, conn);
+
+            cmd1.CommandText = $"SELECT * FROM \"CarMake\"";
+            using var reader1 = cmd1.ExecuteReader();
+
+            var makeResult = new List<CarMake>();
+
+            while (reader1.Read())
+            {
+                try
+                {
+                    makeResult.Add(
+                       new CarMake(
+                           id: (int)reader1[0],
+                           makeName: reader1[1].ToString(),
+                           makeCountry: reader1[2].ToString()
+                       )
+                    );
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+
+            conn.Close();
+
+            conn.Open();
+
+            using var cmd2 = new NpgsqlCommand(connString, conn);
+            cmd2.CommandText = $"SELECT * FROM \"Car\"";
+            
+            using var reader2 = cmd2.ExecuteReader();
+
+            var carResult = new List<Car>();
+
+            while(reader2.Read())
+            {
+                try
+                {
+                    int carMakeId = (int)reader2["CarMakeId"];
+                    CarMake make = makeResult.Find(x => x.Id == carMakeId);
+
+                    carResult.Add(
+                        new Car(
+                            id: (int)reader2[0],
+                            carMake: make,
+                            carModel: reader2[1].ToString(),
+                            yearOfMake: (int)reader2[2],
+                            mileage: (int)reader2[3],
+                            horsepower: (int)reader2[4]
+                        )
+                    );
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+            }
+
+            conn.Close();
+            if (carResult == null)
             {
                 return NotFound("Cars not found");
             } else
             {
-                return Ok(cars);
+                return Ok(carResult);
+            }
+        }
+        
+        [HttpPost]
+        public IActionResult CreateCar([FromBody] Car newCar)
+        {
+            string connString = Configuration.GetConnectionString("db");
+            var conn = new NpgsqlConnection(connString);
+
+            conn.Open();
+            using var cmd = new NpgsqlCommand(connString, conn);
+            cmd.CommandText = "INSERT INTO \"Car\" (\"CarModel\", \"YearOfMake\"," +
+                " \"Mileage\", \"Horsepower\", \"CarMakeId\") values (@model, @yearOfMake, " +
+                "@mileage, @horsepower, @makeId)";
+
+            cmd.Parameters.AddWithValue("model", NpgsqlTypes.NpgsqlDbType.Text ,newCar.CarModel);
+            cmd.Parameters.AddWithValue("yearOfMake", NpgsqlTypes.NpgsqlDbType.Integer, newCar.YearOfMake);
+            cmd.Parameters.AddWithValue("mileage", NpgsqlTypes.NpgsqlDbType.Integer,newCar.Mileage);
+            cmd.Parameters.AddWithValue("horsepower", NpgsqlTypes.NpgsqlDbType.Integer, newCar.Horsepower);
+            cmd.Parameters.AddWithValue("makeId", NpgsqlTypes.NpgsqlDbType.Integer, newCar.CarMakeId);
+
+            int commits = cmd.ExecuteNonQuery();
+
+            conn.Close();
+            if (commits == 0)
+            {
+                return BadRequest("Error adding a car");
+            }
+            else
+            {
+               
+                return Ok(newCar);
             }
         }
 
+        [HttpDelete]
+        public IActionResult DeleteCar(int id)
+        {
+            string connString = Configuration.GetConnectionString("db");
+            var conn = new NpgsqlConnection(connString);
+
+            conn.Open();
+            using var cmd = new NpgsqlCommand(connString, conn);
+
+            cmd.CommandText = $"DELETE FROM \"Car\" WHERE \"Id\" = {id}";
+            int commits = cmd.ExecuteNonQuery();
+
+            if (commits == 0)
+            {
+                return BadRequest();
+            } 
+            else
+            {
+                return Ok();
+            }
+        }
+        /*
         [HttpGet("id")]
         public IActionResult GetCar(int id)
         {
@@ -37,6 +163,7 @@ namespace WebApi.Project.Controllers
             }
         }
 
+        
         [HttpGet("make")]
         public IActionResult GetAllWithMake(string make)
         {
@@ -56,33 +183,6 @@ namespace WebApi.Project.Controllers
             } else
             {
                 return Ok(filteredCars);
-            }
-        }
-
-        [HttpPost]
-        public IActionResult CreateCar(Car newCar)
-        {
-            List<int> ids = new List<int>();
-
-            foreach (Car car in cars) 
-            {
-                ids.Add(car.Id);
-            }
-
-            int newId = 0;
-
-            if (ids.Count > 0) {
-                newId = ids.Max() + 1;
-            }
-
-            if (newCar == null)
-            {
-                return NoContent();
-            } else
-            {
-                newCar.Id = newId;
-                cars.Add(newCar);
-                return Ok(newCar);
             }
         }
 
@@ -107,18 +207,8 @@ namespace WebApi.Project.Controllers
             }
         }
 
-        [HttpDelete]
-        public IActionResult DeleteCar(int id) 
-        { 
-            Car carToRemove = cars.Find(x  => x.Id == id);
-
-            if (carToRemove == null) { return BadRequest(); }
-            else
-            {
-                cars.Remove(carToRemove);
-                return Ok(cars);
-            }
-        }
-
+        
+        */
     }
+
 }
