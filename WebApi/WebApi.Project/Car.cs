@@ -7,17 +7,17 @@ namespace WebApi.Project
         [Required]
         public int Id { get; set; }
         public int CarMakeId { get; set; }
-        public CarMake? Make { get; set; }
         public string? CarModel { get; set; }
         public int Horsepower { get; set; }
         public int YearOfMake { get; set; }
         public int Mileage { get; set; }
+        public Boolean isActive { get; } = true;
 
         public Car() { }
-        public Car(int id, CarMake? carMake, string? carModel, int horsepower, int yearOfMake, int mileage)
+        public Car(int id, int carMakeId, string? carModel, int horsepower, int yearOfMake, int mileage)
         {
             Id = id;
-            Make = carMake;
+            CarMakeId = carMakeId;
             CarModel = carModel;
             Horsepower = horsepower;
             YearOfMake = yearOfMake;
