@@ -23,14 +23,5 @@ namespace WebApi.Project
             YearOfMake = yearOfMake;
             Mileage = mileage;
         }
-
-        public Car(int id, string? carModel, int horsepower, int yearOfMake, int mileage)
-        {
-            Id = id;
-            CarModel = carModel;
-            Horsepower = horsepower;
-            YearOfMake = yearOfMake;
-            Mileage = mileage;
-        }
     }
 }
